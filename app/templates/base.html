@@ -36,7 +36,15 @@
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Обучение</a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="{{ url_for('materials.materials_list') }}">Материалы к уроку</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('lesson_plans.lesson_plans_list') }}">Планы-конспекты</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('events.events_list') }}">Мероприятия</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Журнал</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('journal.journal') }}">Посещаемость и оценки</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('reports.reports') }}">Отчёты</a></li>
                     </ul>
                 </li>
                 {% if current_user.is_admin %}

@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 
-from app.models import Event, Material, Repertoire, Schedule, SchoolClass, Student
+from app.models import (Event, LessonPlan, Material, Repertoire, Schedule,
+                        SchoolClass, Student)
 
 main_bp = Blueprint('main', __name__)
 
@@ -21,4 +22,5 @@ def index():
         total_lessons=Schedule.query.count(),
         total_materials=Material.query.count(),
         total_repertoire=Repertoire.query.count(),
+        total_plans=LessonPlan.query.count(),
     )

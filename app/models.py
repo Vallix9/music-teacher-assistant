@@ -199,3 +199,106 @@ class Event(db.Model):
 
     def __repr__(self):
         return f'<Event {self.title}>'
+
+
+class Attendance(db.Model):
+    """Запись журнала посещаемости по ученику за конкретный урок."""
+
+    __tablename__ = 'attendance'
+
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    schedule_id = db.Column(db.Integer, db.ForeignKey('schedule.id'), nullable=False)
+    lesson_date = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(16), nullable=False, default='present')
+    teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    note = db.Column(db.String(255))
+
+    student = db.relationship('Student', backref='attendance')
+    schedule = db.relationship('Schedule', backref='attendance')
+
+    STATUSES = [
+        ('present', 'Присутствовал'),
+        ('absent', 'Отсутствовал'),
+        ('late', 'Опоздал'),
+        ('excused', 'Пропуск по уважительной причине'),
+    ]
+
+    STATUS_LABELS = dict(STATUSES)
+
+    @property
+    def status_label(self):
+        return self.STATUS_LABELS.get(self.status, self.status)
+
+    @property
+    def is_absent(self):
+        return self.status in ('absent', 'excused')
+
+    def __repr__(self):
+        return f'<Attendance {self.student_id} {self.lesson_date}>'
+
+
+class Grade(db.Model):
+    """Оценка ученика за урок или вид деятельности."""
+
+    __tablename__ = 'grades'
+
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    schedule_id = db.Column(db.Integer, db.ForeignKey('schedule.id'))
+    lesson_date = db.Column(db.Date, nullable=False)
+    category = db.Column(db.String(32), nullable=False, default='За урок')
+    value = db.Column(db.Integer, nullable=False)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    comment = db.Column(db.String(255))
+
+    student = db.relationship('Student', backref='grades')
+    teacher = db.relationship('User', backref='grades')
+
+    CATEGORIES = ['За урок', 'Теоретический ответ', 'Практическая работа',
+                   'Самостоятельная работа', 'Проект', 'Контрольная работа']
+
+    VALUES = [5, 4, 3, 2, 1]
+
+    @property
+    def value_label(self):
+        return {5: 'отлично', 4: 'хорошо', 3: 'удовлетворительно',
+                2: 'неудовлетворительно', 1: 'неудовлетворительно'}.get(self.value, str(self.value))
+
+    def __repr__(self):
+        return f'<Grade {self.student_id} {self.value}>'
+
+
+class LessonPlan(db.Model):
+    """План-конспект урока музыки."""
+
+    __tablename__ = 'lesson_plans'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(180), nullable=False)
+    topic = db.Column(db.String(180))
+    goal = db.Column(db.Text)
+    tasks = db.Column(db.Text)
+    lesson_type = db.Column(db.String(32), default='Урок')
+    class_id = db.Column(db.Integer, db.ForeignKey('school_classes.id'))
+    schedule_id = db.Column(db.Integer, db.ForeignKey('schedule.id'))
+    lesson_date = db.Column(db.Date)
+    duration = db.Column(db.String(32), default='45 мин')
+    equipment = db.Column(db.Text)
+    structure = db.Column(db.Text)
+    homework = db.Column(db.Text)
+    criteria = db.Column(db.Text)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    school_class = db.relationship('SchoolClass', backref='lesson_plans')
+    teacher = db.relationship('User', backref='lesson_plans')
+
+    LESSON_TYPES = ['Урок', 'Повторение', 'Закрепление', 'Контрольный', 'Проектный', 'Праздничный']
+
+    @property
+    def class_name(self):
+        return self.school_class.name if self.school_class else 'Все классы'
+
+    def __repr__(self):
+        return f'<LessonPlan {self.title}>'

@@ -7,5 +7,7 @@ instance/
 .env
 .idea/
 .vscode/
+server.log
+server.err
 app/static/uploads/*
 !app/static/uploads/.gitkeep

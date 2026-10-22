@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}План-конспект{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-1"><i class="bi bi-journal-text"></i> {{ item.title }}</h4>
+        <small class="text-muted">
+            {{ item.class_name }} · {{ item.lesson_type }} · {{ item.duration or '—' }}
+            {% if item.lesson_date %}· {{ item.lesson_date.strftime('%d.%m.%Y') }}{% endif %}
+        </small>
+    </div>
+    <div class="d-flex gap-2">
+        {% if current_user.is_admin or current_user.is_teacher %}
+        <a href="{{ url_for('lesson_plans.lesson_plan_edit', item_id=item.id) }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-pencil"></i> Редактировать
+        </a>
+        {% endif %}
+        <a href="{{ url_for('lesson_plans.lesson_plans_list') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> К списку
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Тема урока</h6>
+                <p>{{ item.topic or item.title }}</p>
+
+                <h6 class="text-uppercase text-muted small">Цель</h6>
+                <p style="white-space: pre-line">{{ item.goal or '—' }}</p>
+
+                <h6 class="text-uppercase text-muted small">Задачи</h6>
+                <p style="white-space: pre-line">{{ item.tasks or '—' }}</p>
+
+                <h6 class="text-uppercase text-muted small">Ход урока</h6>
+                <p style="white-space: pre-line">{{ item.structure or '—' }}</p>
+
+                <h6 class="text-uppercase text-muted small">Оборудование</h6>
+                <p style="white-space: pre-line">{{ item.equipment or '—' }}</p>
+
+                <h6 class="text-uppercase text-muted small">Домашнее задание</h6>
+                <p style="white-space: pre-line">{{ item.homework or '—' }}</p>
+
+                <h6 class="text-uppercase text-muted small">Критерии оценивания</h6>
+                <p style="white-space: pre-line">{{ item.criteria or '—' }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><strong>Сведения</strong></div>
+            <ul class="list-group list-group-flush small">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Класс</span><strong>{{ item.class_name }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Тип урока</span><strong>{{ item.lesson_type }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Длительность</span><strong>{{ item.duration or '—' }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Дата</span>
+                    <strong>{{ item.lesson_date.strftime('%d.%m.%Y') if item.lesson_date else '—' }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Учитель</span><strong>{{ item.teacher.full_name if item.teacher else '—' }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Создан</span>
+                    <strong>{{ item.created_at.strftime('%d.%m.%Y') }}</strong>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

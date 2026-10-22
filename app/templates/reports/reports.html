@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Отчёты{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Отчёты</h4>
+    <div class="d-flex gap-2 align-items-center">
+        <form method="get" class="d-flex gap-2">
+            <select name="class_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">Все классы</option>
+                {% for c in classes %}
+                <option value="{{ c.id }}" {% if selected_class == c.id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="period" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="all" {% if period == 'all' %}selected{% endif %}>За весь период</option>
+                <option value="term" {% if period == 'term' %}selected{% endif %}>За четверть</option>
+                <option value="month" {% if period == 'month' %}selected{% endif %}>За месяц</option>
+            </select>
+        </form>
+        {% if school_class %}
+        <a href="{{ url_for('reports.reports_export', class_id=school_class.id) }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-filetype-csv"></i> Выгрузить CSV
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if class_stats %}
+<div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3">
+        <div class="card text-white bg-success h-100"><div class="card-body">
+            <div class="fs-3 fw-bold">{{ class_stats.percent if class_stats.percent is not none else '—' }}%</div>
+            <div class="small">посещаемость класса</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card text-white bg-primary h-100"><div class="card-body">
+            <div class="fs-3 fw-bold">{{ class_stats.avg_grade if class_stats.avg_grade else '—' }}</div>
+            <div class="small">средний балл класса</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card text-white bg-warning h-100"><div class="card-body">
+            <div class="fs-3 fw-bold">{{ class_stats.total }}</div>
+            <div class="small">записей посещаемости</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card text-white bg-danger h-100"><div class="card-body">
+            <div class="fs-3 fw-bold">{{ class_stats.absent }}</div>
+            <div class="small">пропусков</div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white"><strong><i class="bi bi-pie-chart"></i> Распределение оценок</strong></div>
+            <div class="card-body">
+                {% set total = grade_distribution.values()|sum %}
+                {% if total %}
+                    {% for value, count in grade_distribution.items() %}
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Оценка «{{ value }}»</span>
+                            <span class="text-muted">{{ count }} ({{ (count / total * 100)|round(1) }}%)</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar {% if value == 5 %}bg-success{% elif value == 4 %}bg-info{% elif value == 3 %}bg-warning{% else %}bg-danger{% endif %}"
+                                 style="width: {{ (count / total * 100)|round(1) }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p class="text-muted mb-0">Нет данных об оценках за выбранный период</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white"><strong><i class="bi bi-bar-chart"></i> Сводка по классам</strong></div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>Класс</th><th class="text-center">Посещаемость</th><th class="text-center">Средний балл</th><th class="text-center">Оценок</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for row in class_summary %}
+                        <tr>
+                            <td>{{ row.school_class.name }}</td>
+                            <td class="text-center">{{ row.percent if row.percent is not none else '—' }}{% if row.percent is not none %}%{% endif %}</td>
+                            <td class="text-center">{{ row.avg_grade if row.avg_grade else '—' }}</td>
+                            <td class="text-center">{{ row.grades_count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white"><strong><i class="bi bi-person-check"></i> По ученикам — {{ school_class.name }}</strong></div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th><th>Ученик</th>
+                    <th class="text-center">Уроков</th><th class="text-center">Пропусков</th><th class="text-center">Опозданий</th>
+                    <th class="text-center">Посещаемость</th><th class="text-center">Средний балл</th><th class="text-center">Оценок</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in student_rows %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><a href="{{ url_for('journal.student_journal', student_id=row.student.id) }}">{{ row.student.full_name }}</a></td>
+                    <td class="text-center">{{ row.total }}</td>
+                    <td class="text-center">{{ row.absent }}</td>
+                    <td class="text-center">{{ row.late }}</td>
+                    <td class="text-center">
+                        {% if row.percent is not none %}
+                        <span class="badge {% if row.percent >= 90 %}bg-success{% elif row.percent >= 75 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                            {{ row.percent }}%
+                        </span>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td class="text-center">{{ row.avg if row.avg else '—' }}</td>
+                    <td class="text-center">{{ row.grades_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card shadow-sm">
+    <div class="card-body text-center text-muted py-5">
+        <i class="bi bi-clipboard-data fs-1"></i>
+        <p class="mt-2 mb-0">Выберите класс для построения отчёта</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

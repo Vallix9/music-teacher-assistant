@@ -1,8 +1,8 @@
 from datetime import date, timedelta
 
 from app import db
-from app.models import (Event, Material, Repertoire, Role, Schedule,
-                        SchoolClass, Student, User)
+from app.models import (Attendance, Event, Grade, LessonPlan, Material, Repertoire,
+                        Role, Schedule, SchoolClass, Student, User)
 
 DEFAULT_YEAR = '2025/2026'
 
@@ -143,5 +143,93 @@ def seed_data():
         db.session.add(Event(title=title, description=description, event_date=event_date,
                              event_time=event_time, place=place, class_id=class_id,
                              teacher_id=teacher.id, status=status))
+
+    # --- Журнал посещаемости и оценок ---
+    all_students = Student.query.all()
+    schedule_items = Schedule.query.all()
+    past_offsets = [7, 14, 21, 28, 35, 42]
+    status_cycle = ['present', 'present', 'present', 'late', 'present',
+                    'absent', 'present', 'excused', 'present', 'present']
+    grade_cycle = [5, 4, 5, 4, 3, 5, 4, 5, 3, 4]
+    grade_categories = ['За урок', 'Практическая работа', 'Теоретический ответ']
+
+    for index, student in enumerate(all_students):
+        student_lessons = [s for s in schedule_items if s.class_id == student.class_id]
+        for lesson_index, schedule_item in enumerate(student_lessons):
+            for day_index, offset in enumerate(past_offsets):
+                day = today - timedelta(days=offset)
+                status = status_cycle[(index + lesson_index + day_index) % len(status_cycle)]
+                db.session.add(Attendance(student_id=student.id,
+                                          schedule_id=schedule_item.id,
+                                          lesson_date=day,
+                                          status=status,
+                                          teacher_id=schedule_item.teacher_id))
+                if status in ('present', 'late'):
+                    value = grade_cycle[(index + lesson_index + day_index) % len(grade_cycle)]
+                    db.session.add(Grade(student_id=student.id,
+                                         schedule_id=schedule_item.id,
+                                         lesson_date=day,
+                                         category=grade_categories[day_index % len(grade_categories)],
+                                         value=value,
+                                         teacher_id=schedule_item.teacher_id))
+
+    # --- Планы-конспекты уроков ---
+    plans_data = [
+        ('Знакомство с народными инструментами', classes[0].id,
+         'Народные инструменты: знакомство',
+         'Познакомить обучающихся с народными музыкальными инструментами; научить различать их по звучанию.',
+         'Образовательные: познакомить с народными инструментами и их особенностями.\n'
+         'Развивающие: развивать слух, чувство ритма, музыкальную память.\n'
+         'Воспитательные: воспитывать интерес к народной музыке и культуре.',
+         '1. Организационный момент. Приветствие, настрой на работу.\n'
+         '2. Повторение: жанры народной музыки, загадки о инструментах.\n'
+         '3. Изучение нового материала: демонстрация гусли, балалайки, свистульки, кастаньет.\n'
+         '4. Физкультминутка «Весёлый музыкант».\n'
+         '5. Практическая работа: определение инструмента по звучанию, игра на гусях.\n'
+         '6. Итог урока, домашнее задание.',
+         'Фортепиано, гусли, балалайка, свистулька, карточки с изображениями инструментов, '
+         'музыкальные инструменты для слушания, проектор.',
+         'Выучить загадки о народных инструментах; нарисовать любимый народный инструмент.',
+         '5 — верно определил инструмент по звучанию, активное участие;\n'
+         '4 — верно определил с помощью учителя;\n'
+         '3 — затрудняется в определении, пассивное участие.'),
+        ('Строение песни. Куплет и припев', classes[1].id,
+         'Строение музыкального произведения',
+         'Сформировать представление о строении песни (куплет, припев) на материале русских народных песен.',
+         'Образовательные: научить различать куплет и припев.\n'
+         'Развивающие: развивать слух, умение анализировать музыкальное произведение.\n'
+         'Воспитательные: воспитывать умение слушать и понимать музыку.',
+         '1. Организационный момент.\n'
+         '2. Актуализация знаний: разминка «Слова-подсказки».\n'
+         '3. Открытие нового: слушание песни «В траве сидел кузнечик», выделение повторов.\n'
+         '4. Работа с текстом: разметка куплетов и припевов.\n'
+         '5. Практическая работа: разметить куплеты и припевы в «Кукушке».\n'
+         '6. Рефлексия, домашнее задание.',
+         'Проектор, аудиозаписи, тексты песен с куплетами и припевами, цветные карандаши.',
+         'Разметить куплеты и припевы в народной песне, выученной на прошлом уроке.',
+         '5 — верно разметил и объяснил; 4 — верно разметил с помощью; 3 — допустил ошибки.'),
+        ('Музыкальный фольклор России', classes[4].id,
+         'Народные песни: песни разных регионов',
+         'Познакомить обучающихся с народными песнями разных регионов России, сравнить их характер.',
+         'Образовательные: познакомить с песнями разных регионов.\n'
+         'Развивающие: развивать тембровый слух, умение сравнивать.\n'
+         'Воспитательные: воспитывать уважение к традициям разных народов.',
+         '1. Организационный момент.\n'
+         '2. Повторение изученных песен.\n'
+         '3. Слушание: «В горнице», «Бульба», сравнение характера.\n'
+         '4. Проблемная ситуация: чем отличаются песни разных регионов?\n'
+         '5. Практическая работа: подбор песен для своего региона.\n'
+         '6. Итог урока.',
+         'Компьютер, презентация, аудиозаписи песен разных регионов, карта России.',
+         'Подготовить сообщение о музыкальной традиции своего региона (3–4 предложения).',
+         '5 — верно сравнил, подобрал пример; 4 — сравнил с помощью учителя; 3 — ответ неполный.'),
+    ]
+    for title, class_id, topic, goal, tasks, structure, equipment, homework, criteria in plans_data:
+        db.session.add(LessonPlan(title=title, topic=topic, goal=goal, tasks=tasks,
+                                  lesson_type='Урок', class_id=class_id,
+                                  lesson_date=today, duration='45 мин',
+                                  equipment=equipment, structure=structure,
+                                  homework=homework, criteria=criteria,
+                                  teacher_id=teacher.id))
 
     db.session.commit()
