@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1">Здравствуйте, {{ current_user.full_name }}!</h4>
+        <p class="text-muted mb-0">Система-помощник учителя музыки в школе</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card text-white bg-primary h-100">
+            <div class="card-body">
+                <div class="fs-3 fw-bold">{{ total_classes }}</div>
+                <div class="small">классов</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card text-white bg-success h-100">
+            <div class="card-body">
+                <div class="fs-3 fw-bold">{{ total_students }}</div>
+                <div class="small">учеников</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card text-white bg-warning h-100">
+            <div class="card-body">
+                <div class="fs-3 fw-bold">{{ total_lessons }}</div>
+                <div class="small">уроков в расписании</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card text-white bg-info h-100">
+            <div class="card-body">
+                <div class="fs-3 fw-bold">{{ total_materials }}</div>
+                <div class="small">материалов</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-people-fill"></i> Классы</strong>
+                <a href="{{ url_for('students.classes_list') }}" class="btn btn-sm btn-outline-primary">Все классы</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>Класс</th><th>Учитель</th><th class="text-center">Учеников</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for c in classes %}
+                        <tr>
+                            <td><a href="{{ url_for('students.class_students', class_id=c.id) }}">{{ c.name }}</a></td>
+                            <td>{{ c.teacher.full_name if c.teacher else '—' }}</td>
+                            <td class="text-center">{{ c.student_count }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="text-center text-muted py-4">Классы не созданы</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-calendar-event"></i> Ближайшие мероприятия</strong>
+                <a href="{{ url_for('events.events_list') }}" class="btn btn-sm btn-outline-primary">Все</a>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for e in upcoming %}
+                <a href="{{ url_for('events.events_list') }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ e.title }}</strong>
+                        <span class="badge bg-primary">{{ e.event_date.strftime('%d.%m.%Y') }}</span>
+                    </div>
+                    <small class="text-muted">
+                        {{ e.event_time or '' }} {{ e.place or '' }} {{ '· ' + e.class_name if e.class_id }}
+                    </small>
+                </a>
+                {% else %}
+                <div class="list-group-item text-center text-muted py-4">Запланированных мероприятий нет</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

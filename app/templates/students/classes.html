@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Классы{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-door-open"></i> Классы</h4>
+    {% if current_user.is_admin or current_user.is_teacher %}
+    <a href="{{ url_for('students.class_create') }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg"></i> Добавить класс
+    </a>
+    {% endif %}
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Класс</th>
+                    <th>Класс с номером</th>
+                    <th>Учитель</th>
+                    <th>Учебный год</th>
+                    <th class="text-center">Учеников</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in classes %}
+                <tr>
+                    <td><a href="{{ url_for('students.class_students', class_id=c.id) }}"><strong>{{ c.name }}</strong></a></td>
+                    <td>{{ c.grade }}</td>
+                    <td>{{ c.teacher.full_name if c.teacher else '—' }}</td>
+                    <td>{{ c.year }}</td>
+                    <td class="text-center">{{ c.student_count }}</td>
+                    <td class="text-end">
+                        {% if current_user.is_admin or current_user.is_teacher %}
+                        <a href="{{ url_for('students.class_edit', class_id=c.id) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="post" action="{{ url_for('students.class_delete', class_id=c.id) }}" class="d-inline"
+                              onsubmit="return confirm('Удалить класс {{ c.name }}? Все ученики класса будут удалены.')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-muted py-4">Классы не созданы</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

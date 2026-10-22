@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Материалы к уроку{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-folder"></i> Материалы к уроку</h4>
+    <div class="d-flex gap-2 align-items-center">
+        <form method="get" class="d-flex gap-2">
+            <select name="class_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">Все классы</option>
+                {% for c in classes %}
+                <option value="{{ c.id }}" {% if selected_class == c.id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="lesson_type" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">Все типы</option>
+                {% for t in lesson_types %}
+                <option value="{{ t }}" {% if selected_type == t %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        {% if current_user.is_admin or current_user.is_teacher %}
+        <a href="{{ url_for('materials.material_create') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Добавить материал
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Название</th>
+                    <th>Тип</th>
+                    <th>Класс</th>
+                    <th>Автор</th>
+                    <th>Файл / ссылка</th>
+                    <th>Добавлен</th>
+                    {% if current_user.is_admin or current_user.is_teacher %}
+                    <th class="text-end">Действия</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in items %}
+                <tr>
+                    <td>{{ m.id }}</td>
+                    <td>
+                        <strong>{{ m.title }}</strong>
+                        {% if m.description %}<br><small class="text-muted">{{ m.description }}</small>{% endif %}
+                    </td>
+                    <td><span class="badge bg-secondary">{{ m.lesson_type }}</span></td>
+                    <td>{{ m.class_name }}</td>
+                    <td>{{ m.teacher.full_name if m.teacher else '—' }}</td>
+                    <td>
+                        {% if m.file_name %}
+                        <a href="{{ url_for('materials.material_download', item_id=m.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-download"></i> {{ m.file_name }}
+                        </a>
+                        {% endif %}
+                        {% if m.link %}
+                        <a href="{{ m.link }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-link-45deg"></i> Ссылка
+                        </a>
+                        {% endif %}
+                        {% if not m.file_name and not m.link %}<span class="text-muted">—</span>{% endif %}
+                    </td>
+                    <td><small>{{ m.created_at.strftime('%d.%m.%Y') }}</small></td>
+                    {% if current_user.is_admin or current_user.is_teacher %}
+                    <td class="text-end">
+                        <a href="{{ url_for('materials.material_edit', item_id=m.id) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="post" action="{{ url_for('materials.material_delete', item_id=m.id) }}" class="d-inline"
+                              onsubmit="return confirm('Удалить материал «{{ m.title }}»?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">Материалы не найдены</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

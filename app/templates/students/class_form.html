@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ school_class and 'Редактирование класса' or 'Новый класс' }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0"><i class="bi bi-door-open"></i>
+                {{ school_class and 'Редактирование класса' or 'Добавление класса' }}
+            </h4>
+            <a href="{{ url_for('students.classes_list') }}" class="btn btn-outline-secondary btn-sm">К списку</a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Название класса *</label>
+                            <input type="text" name="name" class="form-control" required placeholder="5А"
+                                   value="{{ school_class.name if school_class else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Номер класса *</label>
+                            <input type="number" name="grade" class="form-control" required min="1" max="11"
+                                   value="{{ school_class.grade if school_class else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Учебный год</label>
+                            <input type="text" name="year" class="form-control" value="{{ school_class.year if school_class else '2025/2026' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Учитель</label>
+                            <select name="teacher_id" class="form-select">
+                                <option value="">— не назначен —</option>
+                                {% for t in teachers %}
+                                <option value="{{ t.id }}" {% if school_class and school_class.teacher_id == t.id %}selected{% endif %}>
+                                    {{ t.full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Сохранить</button>
+                        <a href="{{ url_for('students.classes_list') }}" class="btn btn-outline-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

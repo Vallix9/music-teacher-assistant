@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ item and 'Редактирование материала' or 'Новый материал' }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0"><i class="bi bi-folder-plus"></i>
+                {{ item and 'Редактирование материала' or 'Добавление материала' }}
+            </h4>
+            <a href="{{ url_for('materials.materials_list') }}" class="btn btn-outline-secondary btn-sm">К материалам</a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Название материала *</label>
+                            <input type="text" name="title" class="form-control" required
+                                   value="{{ item.title if item else '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Тип занятия</label>
+                            <select name="lesson_type" class="form-select">
+                                {% for t in ['Урок', 'Практика', 'Контрольная', 'Проект', 'Концерт', 'Прочее'] %}
+                                <option value="{{ t }}" {% if item and item.lesson_type == t %}selected{% endif %}>{{ t }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Класс</label>
+                            <select name="class_id" class="form-select">
+                                <option value="">— все классы —</option>
+                                {% for c in classes %}
+                                <option value="{{ c.id }}" {% if item and item.class_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ссылка (YouTube, аудиохостинг)</label>
+                            <input type="url" name="link" class="form-control" placeholder="https://..."
+                                   value="{{ item.link if item and item.link else '' }}">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Описание</label>
+                            <textarea name="description" class="form-control" rows="4">{{ item.description if item and item.description else '' }}</textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Файл</label>
+                            <input type="file" name="file" class="form-control">
+                            <small class="text-muted">
+                                Допустимые форматы: pdf, doc(x), xls(x), ppt(x), txt, изображения, аудио (mp3, wav, ogg), midi
+                            </small>
+                            {% if item and item.file_name %}
+                            <div class="mt-2">
+                                <a href="{{ url_for('materials.material_download', item_id=item.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-download"></i> {{ item.file_name }}
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Сохранить</button>
+                        <a href="{{ url_for('materials.materials_list') }}" class="btn btn-outline-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

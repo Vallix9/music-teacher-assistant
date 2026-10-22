@@ -1,0 +1,45 @@
+body {
+    background-color: #f4f6f9;
+}
+
+.card {
+    border-radius: .6rem;
+    border: 1px solid #e3e6ea;
+}
+
+.stat-card {
+    border: none;
+}
+
+.stat-card .card-body {
+    padding: 1.1rem 1.25rem;
+}
+
+.navbar-brand i {
+    color: #7dd3fc;
+}
+
+.table > :not(caption) > * > * {
+    padding: .55rem .6rem;
+}
+
+table thead th {
+    font-size: .82rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: #6c757d;
+}
+
+.card-header {
+    font-size: .95rem;
+}
+
+.btn-sm {
+    --bs-btn-padding-y: .25rem;
+    --bs-btn-padding-x: .5rem;
+    --bs-btn-font-size: .8rem;
+}
+
+footer {
+    background-color: #fff;
+}

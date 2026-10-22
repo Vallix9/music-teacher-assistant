@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Мероприятия{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-calendar-event"></i> Мероприятия и концерты</h4>
+    <div class="d-flex gap-2 align-items-center">
+        <form method="get" class="d-flex gap-2">
+            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">Все статусы</option>
+                {% for s in statuses %}
+                <option value="{{ s }}" {% if selected_status == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        {% if current_user.is_admin or current_user.is_teacher %}
+        <a href="{{ url_for('events.event_create') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Добавить мероприятие
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3">
+    {% for e in items %}
+    <div class="col-md-6 col-xl-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title mb-0">{{ e.title }}</h5>
+                    <span class="badge {% if e.status == 'Проведено' %}bg-secondary{% elif e.status == 'Отменено' %}bg-danger{% else %}bg-primary{% endif %}">
+                        {{ e.status }}
+                    </span>
+                </div>
+                {% if e.description %}
+                <p class="card-text small text-muted">{{ e.description }}</p>
+                {% endif %}
+                <ul class="list-unstyled small mb-0">
+                    <li><i class="bi bi-calendar-date"></i> {{ e.event_date.strftime('%d.%m.%Y') }}
+                        {% if e.event_time %} в {{ e.event_time }}{% endif %}</li>
+                    <li><i class="bi bi-geo-alt"></i> {{ e.place or 'Место не указано' }}</li>
+                    <li><i class="bi bi-people"></i> {{ e.class_name }}</li>
+                </ul>
+            </div>
+            {% if current_user.is_admin or current_user.is_teacher %}
+            <div class="card-footer bg-white d-flex justify-content-end gap-2">
+                <a href="{{ url_for('events.event_edit', item_id=e.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-pencil"></i> Изменить
+                </a>
+                <form method="post" action="{{ url_for('events.event_delete', item_id=e.id) }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                            onclick="return confirm('Удалить мероприятие «{{ e.title }}»?')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body text-center text-muted py-5">
+                <i class="bi bi-calendar-x fs-1"></i>
+                <p class="mt-2 mb-0">Мероприятий нет</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

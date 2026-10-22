@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Репертуар{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-music-note-list"></i> Репертуар</h4>
+    <div class="d-flex gap-2 align-items-center">
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="q" class="form-control form-control-sm" placeholder="Поиск по названию или композитору"
+                   value="{{ q }}">
+            <select name="class_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">Все классы</option>
+                {% for c in classes %}
+                <option value="{{ c.id }}" {% if selected_class == c.id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-search"></i></button>
+        </form>
+        {% if current_user.is_admin or current_user.is_teacher %}
+        <a href="{{ url_for('repertoire.repertoire_create') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Добавить произведение
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Название</th>
+                    <th>Композитор</th>
+                    <th>Жанр</th>
+                    <th>Класс</th>
+                    <th>Сложность</th>
+                    <th>Длительность</th>
+                    {% if current_user.is_admin or current_user.is_teacher %}
+                    <th class="text-end">Действия</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in items %}
+                <tr>
+                    <td>{{ r.id }}</td>
+                    <td>
+                        <strong>{{ r.title }}</strong>
+                        {% if r.link %}
+                        <br><a href="{{ r.link }}" target="_blank" rel="noopener" class="small">
+                            <i class="bi bi-link-45deg"></i> ссылка на запись
+                        </a>
+                        {% endif %}
+                    </td>
+                    <td>{{ r.composer or '—' }}</td>
+                    <td>{{ r.genre or '—' }}</td>
+                    <td>{{ r.class_name }}</td>
+                    <td>
+                        <span class="badge {% if r.difficulty == 'Лёгкий' %}bg-success{% elif r.difficulty == 'Средний' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                            {{ r.difficulty }}
+                        </span>
+                    </td>
+                    <td>{{ r.duration or '—' }}</td>
+                    {% if current_user.is_admin or current_user.is_teacher %}
+                    <td class="text-end">
+                        <a href="{{ url_for('repertoire.repertoire_edit', item_id=r.id) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="post" action="{{ url_for('repertoire.repertoire_delete', item_id=r.id) }}" class="d-inline"
+                              onsubmit="return confirm('Удалить произведение «{{ r.title }}»?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">Репертуар пуст</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
