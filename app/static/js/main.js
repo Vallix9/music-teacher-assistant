@@ -25,16 +25,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (backdrop) backdrop.addEventListener('click', closeSidebar);
 
-    // Подсветка «нажатой» клавиши пианино при наведении курсора
-    var piano = document.querySelector('.piano');
-    if (piano) {
-        piano.addEventListener('mousemove', function (e) {
-            var rect = piano.getBoundingClientRect();
-            var x = ((e.clientX - rect.left) / rect.width) * 100;
-            piano.style.setProperty('--key-glow', x + '%');
-        });
-    }
-
     // Подсказки
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
         new bootstrap.Tooltip(el);
