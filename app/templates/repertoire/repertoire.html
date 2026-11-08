@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h4 class="mb-0"><i class="bi bi-music-note-list"></i> Репертуар</h4>
+    <h4 class="page-title mb-0"><i class="bi bi-music-note-list"></i> Репертуар</h4>
     <div class="d-flex gap-2 align-items-center">
         <form method="get" class="d-flex gap-2">
             <input type="text" name="q" class="form-control form-control-sm" placeholder="Поиск по названию или композитору"
@@ -27,7 +27,7 @@
 <div class="card shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover mb-0 align-middle">
-            <thead class="table-light">
+            <thead>
                 <tr>
                     <th>#</th>
                     <th>Название</th>
@@ -57,7 +57,7 @@
                     <td>{{ r.genre or '—' }}</td>
                     <td>{{ r.class_name }}</td>
                     <td>
-                        <span class="badge {% if r.difficulty == 'Лёгкий' %}bg-success{% elif r.difficulty == 'Средний' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                        <span class="badge {% if r.difficulty == 'Лёгкий' %}bg-success{% elif r.difficulty == 'Средний' %}bg-warning{% else %}bg-danger{% endif %}">
                             {{ r.difficulty }}
                         </span>
                     </td>

@@ -2,77 +2,96 @@
 {% block title %}Главная{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
     <div>
-        <h4 class="mb-1">Здравствуйте, {{ current_user.full_name }}!</h4>
-        <p class="text-muted mb-0">Система-помощник учителя музыки в школе</p>
+        <div class="text-uppercase small fw-bold" style="color: var(--violet); letter-spacing: .14em;">
+            Рабочий стол учителя
+        </div>
+        <h4 class="mb-1 mt-1">Здравствуйте, {{ current_user.full_name.split(' ')[1] if current_user.full_name.split(' ')|length > 1 else current_user.full_name }}!</h4>
+        <p class="text-muted mb-0 small">
+            Сегодня {{ ['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'][today_number - 1] }}
+            · {{ today_lessons|length }} урок(ов) в расписании
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('journal.journal') }}" class="btn btn-primary">
+            <i class="bi bi-journal-check"></i> Открыть журнал
+        </a>
+        <a href="{{ url_for('reports.reports') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-graph-up-arrow"></i> Отчёты
+        </a>
     </div>
 </div>
 
-<div class="row g-3 mb-4">
+<div class="row g-3 mb-3">
     <div class="col-6 col-lg-3">
-        <div class="card stat-card text-white bg-primary h-100">
+        <div class="card stat-card stat-violet h-100">
             <div class="card-body">
-                <div class="fs-3 fw-bold">{{ total_classes }}</div>
-                <div class="small">классов</div>
+                <div class="stat-value">{{ total_classes }}</div>
+                <div class="stat-label">классов</div>
             </div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card stat-card text-white bg-success h-100">
+        <div class="card stat-card stat-blue h-100">
             <div class="card-body">
-                <div class="fs-3 fw-bold">{{ total_students }}</div>
-                <div class="small">учеников</div>
+                <div class="stat-value">{{ total_students }}</div>
+                <div class="stat-label">учеников</div>
             </div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card stat-card text-white bg-warning h-100">
+        <div class="card stat-card stat-mint h-100">
             <div class="card-body">
-                <div class="fs-3 fw-bold">{{ total_lessons }}</div>
-                <div class="small">уроков в расписании</div>
+                <div class="stat-value">{{ avg_grade if avg_grade else '—' }}</div>
+                <div class="stat-label">средний балл</div>
             </div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card stat-card text-white bg-info h-100">
+        <div class="card stat-card stat-gold h-100">
             <div class="card-body">
-                <div class="fs-3 fw-bold">{{ total_materials }}</div>
-                <div class="small">материалов</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="card stat-card text-white bg-dark h-100">
-            <div class="card-body">
-                <div class="fs-3 fw-bold">{{ total_plans }}</div>
-                <div class="small">планов-конспектов</div>
+                <div class="stat-value">{{ total_repertoire }}</div>
+                <div class="stat-label">произведений в репертуаре</div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row g-3">
-    <div class="col-lg-7">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <strong><i class="bi bi-people-fill"></i> Классы</strong>
-                <a href="{{ url_for('students.classes_list') }}" class="btn btn-sm btn-outline-primary">Все классы</a>
+    <!-- Расписание -->
+    <div class="col-xl-7">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-calendar-week me-2" style="color: var(--violet);"></i>Расписание уроков</strong>
+                <a href="{{ url_for('schedule.schedule_list') }}" class="btn btn-sm btn-outline-primary">Всё расписание</a>
             </div>
             <div class="table-responsive">
-                <table class="table table-hover mb-0 align-middle">
-                    <thead class="table-light">
-                        <tr><th>Класс</th><th>Учитель</th><th class="text-center">Учеников</th></tr>
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width:60px">№</th>
+                            <th>Время</th>
+                            <th>Класс</th>
+                            <th>Кабинет</th>
+                            <th>Учитель</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        {% for c in classes %}
+                        {% for lesson in today_lessons %}
                         <tr>
-                            <td><a href="{{ url_for('students.class_students', class_id=c.id) }}">{{ c.name }}</a></td>
-                            <td>{{ c.teacher.full_name if c.teacher else '—' }}</td>
-                            <td class="text-center">{{ c.student_count }}</td>
+                            <td><span class="badge bg-primary">{{ lesson.lesson_number }}</span></td>
+                            <td><strong>{{ lesson.start_time }}</strong> <span class="text-muted">— {{ lesson.end_time }}</span></td>
+                            <td>
+                                <a href="{{ url_for('students.class_students', class_id=lesson.class_id) }}">
+                                    {{ lesson.school_class.name }}
+                                </a>
+                            </td>
+                            <td class="text-muted">{{ lesson.room or '—' }}</td>
+                            <td class="text-muted small">{{ lesson.teacher.full_name if lesson.teacher else '—' }}</td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="3" class="text-center text-muted py-4">Классы не созданы</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted py-4">На сегодня уроков нет</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -80,26 +99,117 @@
         </div>
     </div>
 
-    <div class="col-lg-5">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <strong><i class="bi bi-calendar-event"></i> Ближайшие мероприятия</strong>
+    <!-- Правая колонка -->
+    <div class="col-xl-5">
+        <div class="d-flex flex-column gap-3 h-100">
+            <div class="card flex-fill">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-music-note-list me-2" style="color: var(--gold);"></i>Репертуар</strong>
+                    <a href="{{ url_for('repertoire.repertoire_list') }}" class="btn btn-sm btn-outline-primary">Все</a>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for r in recent_repertoire %}
+                    <a href="{{ url_for('repertoire.repertoire_list') }}" class="list-group-item list-group-item-action d-flex align-items-center gap-3">
+                        <span class="track-cover"><i class="bi bi-music-note"></i></span>
+                        <span class="flex-grow-1">
+                            <span class="d-block fw-semibold" style="font-size:.85rem;">{{ r.title }}</span>
+                            <span class="d-block text-muted" style="font-size:.72rem;">
+                                {{ r.composer or 'Неизвестный композитор' }} · {{ r.class_name }}
+                            </span>
+                        </span>
+                        <span class="badge {% if r.difficulty == 'Лёгкий' %}bg-success{% elif r.difficulty == 'Средний' %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ r.difficulty }}
+                        </span>
+                    </a>
+                    {% else %}
+                    <div class="list-group-item text-center text-muted py-4">Репертуар пуст</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card flex-fill">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-star me-2" style="color: var(--mint);"></i>Последние оценки</strong>
+                    <a href="{{ url_for('journal.journal') }}" class="btn btn-sm btn-outline-primary">Журнал</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr><th>Ученик</th><th>Вид работы</th><th class="text-center">Оценка</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for g in recent_grades %}
+                            <tr>
+                                <td style="font-size:.82rem;">{{ g.student.full_name }}</td>
+                                <td class="text-muted" style="font-size:.74rem;">{{ g.category }}</td>
+                                <td class="text-center">
+                                    <span class="grade-chip grade-{{ g.value }}">{{ g.value }}</span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="3" class="text-center text-muted py-4">Оценок пока нет</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-xl-7">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-calendar-event me-2" style="color: var(--coral);"></i>Ближайшие мероприятия</strong>
                 <a href="{{ url_for('events.events_list') }}" class="btn btn-sm btn-outline-primary">Все</a>
             </div>
             <div class="list-group list-group-flush">
                 {% for e in upcoming %}
-                <a href="{{ url_for('events.events_list') }}" class="list-group-item list-group-item-action">
-                    <div class="d-flex justify-content-between">
-                        <strong>{{ e.title }}</strong>
-                        <span class="badge bg-primary">{{ e.event_date.strftime('%d.%m.%Y') }}</span>
-                    </div>
-                    <small class="text-muted">
-                        {{ e.event_time or '' }} {{ e.place or '' }} {{ '· ' + e.class_name if e.class_id }}
-                    </small>
-                </a>
+                <div class="list-group-item d-flex align-items-center gap-3">
+                    <span class="date-tile">
+                        <span class="date-day">{{ e.event_date.strftime('%d') }}</span>
+                        <span class="date-mon">{{ e.event_date.strftime('%m') }}</span>
+                    </span>
+                    <span class="flex-grow-1">
+                        <span class="d-block fw-semibold" style="font-size:.85rem;">{{ e.title }}</span>
+                        <span class="d-block text-muted" style="font-size:.72rem;">
+                            {{ e.event_time or '' }} {{ e.place or '' }} · {{ e.class_name }}
+                        </span>
+                    </span>
+                    <span class="badge bg-primary">{{ e.status }}</span>
+                </div>
                 {% else %}
                 <div class="list-group-item text-center text-muted py-4">Запланированных мероприятий нет</div>
                 {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-5">
+        <div class="card h-100">
+            <div class="card-header"><strong><i class="bi bi-collection me-2" style="color: var(--blue);"></i>Сводка</strong></div>
+            <div class="card-body">
+                <div class="summary-row">
+                    <span><i class="bi bi-calendar-week"></i> Уроков в расписании</span>
+                    <strong>{{ total_lessons }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span><i class="bi bi-folder2-open"></i> Материалов</span>
+                    <strong>{{ total_materials }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span><i class="bi bi-journal-text"></i> Планов-конспектов</span>
+                    <strong>{{ total_plans }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span><i class="bi bi-journal-check"></i> Записей посещаемости</span>
+                    <strong>{{ total_attendance }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span><i class="bi bi-people"></i> Классов</span>
+                    <strong>{{ total_classes }}</strong>
+                </div>
             </div>
         </div>
     </div>

@@ -42,16 +42,16 @@
 <div class="row g-3">
     <div class="col-lg-6">
         <div class="card shadow-sm h-100">
-            <div class="card-header bg-white"><strong><i class="bi bi-calendar-check"></i> Посещаемость</strong></div>
+            <div class="card-header"><strong><i class="bi bi-calendar-check"></i> Посещаемость</strong></div>
             <div class="table-responsive">
                 <table class="table table-sm table-hover mb-0 align-middle">
-                    <thead class="table-light"><tr><th>Дата</th><th>Статус</th><th>Примечание</th></tr></thead>
+                    <thead><tr><th>Дата</th><th>Статус</th><th>Примечание</th></tr></thead>
                     <tbody>
                         {% for a in attendance %}
                         <tr>
                             <td>{{ a.lesson_date.strftime('%d.%m.%Y') }}</td>
                             <td>
-                                <span class="badge {% if a.status=='present' %}bg-success{% elif a.status=='absent' %}bg-danger{% elif a.status=='late' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                <span class="badge {% if a.status=='present' %}bg-success{% elif a.status=='absent' %}bg-danger{% elif a.status=='late' %}bg-warning{% else %}bg-secondary{% endif %}">
                                     {{ a.status_label }}
                                 </span>
                             </td>
@@ -68,17 +68,17 @@
 
     <div class="col-lg-6">
         <div class="card shadow-sm h-100">
-            <div class="card-header bg-white"><strong><i class="bi bi-star"></i> Оценки</strong></div>
+            <div class="card-header"><strong><i class="bi bi-star"></i> Оценки</strong></div>
             <div class="table-responsive">
                 <table class="table table-sm table-hover mb-0 align-middle">
-                    <thead class="table-light"><tr><th>Дата</th><th>Вид работы</th><th>Оценка</th><th>Комментарий</th></tr></thead>
+                    <thead><tr><th>Дата</th><th>Вид работы</th><th>Оценка</th><th>Комментарий</th></tr></thead>
                     <tbody>
                         {% for g in grades %}
                         <tr>
                             <td>{{ g.lesson_date.strftime('%d.%m.%Y') }}</td>
                             <td class="small">{{ g.category }}</td>
                             <td>
-                                <span class="badge {% if g.value==5 %}bg-success{% elif g.value==4 %}bg-info{% elif g.value==3 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                <span class="badge {% if g.value==5 %}bg-success{% elif g.value==4 %}bg-info{% elif g.value==3 %}bg-warning{% else %}bg-danger{% endif %}">
                                     {{ g.value }}
                                 </span>
                             </td>

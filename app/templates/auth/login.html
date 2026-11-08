@@ -1,47 +1,39 @@
 {% extends "base.html" %}
 {% block title %}Вход в систему{% endblock %}
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-5 col-lg-4">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <div class="text-center mb-4">
-                    <i class="bi bi-music-note-beamed fs-1 text-primary"></i>
-                    <h4 class="mt-2 mb-1">Помощник учителя музыки</h4>
-                    <p class="text-muted small mb-0">Вход в систему</p>
-                </div>
+{% block auth_content %}
+<div class="auth-card">
+    <div class="auth-logo"><i class="bi bi-music-note-beamed"></i></div>
+    <h1 class="auth-title">Music Assistant</h1>
+    <p class="auth-sub">Система-помощник учителя музыки в школе</p>
 
-                <form method="post">
-                    <div class="mb-3">
-                        <label class="form-label">Логин или e-mail</label>
-                        <input type="text" name="username" class="form-control" required autofocus
-                               placeholder="teacher">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Пароль</label>
-                        <input type="password" name="password" class="form-control" required
-                               placeholder="••••••••">
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-box-arrow-in-right"></i> Войти
-                    </button>
-                </form>
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">Логин или e-mail</label>
+            <div class="search-box" style="height: 46px; max-width: none;">
+                <i class="bi bi-person"></i>
+                <input type="text" name="username" required autofocus placeholder="teacher" autocomplete="username">
             </div>
         </div>
-
-        <div class="card mt-3">
-            <div class="card-header bg-light"><strong>Демонстрационные учётные записи</strong></div>
-            <div class="card-body small">
-                <table class="table table-sm mb-0">
-                    <tbody>
-                        <tr><td>Админ</td><td><code>admin</code></td><td><code>admin123</code></td></tr>
-                        <tr><td>Учитель</td><td><code>teacher</code></td><td><code>teacher123</code></td></tr>
-                        <tr><td>Учитель 2</td><td><code>teacher2</code></td><td><code>teacher123</code></td></tr>
-                        <tr><td>Родитель</td><td><code>parent</code></td><td><code>parent123</code></td></tr>
-                    </tbody>
-                </table>
+        <div class="mb-4">
+            <label class="form-label">Пароль</label>
+            <div class="search-box" style="height: 46px; max-width: none;">
+                <i class="bi bi-shield-lock"></i>
+                <input type="password" name="password" required placeholder="••••••••" autocomplete="current-password">
             </div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2">
+            <i class="bi bi-box-arrow-in-right"></i> Войти в систему
+        </button>
+    </form>
+
+    <div class="auth-demo">
+        <div class="auth-demo-title">Демонстрационные доступы</div>
+        <div class="demo-grid">
+            <div class="demo-item"><b>Администратор</b><span>admin / admin123</span></div>
+            <div class="demo-item"><b>Учитель</b><span>teacher / teacher123</span></div>
+            <div class="demo-item"><b>Учитель 2</b><span>teacher2 / teacher123</span></div>
+            <div class="demo-item"><b>Родитель</b><span>parent / parent123</span></div>
         </div>
     </div>
 </div>

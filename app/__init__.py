@@ -38,6 +38,7 @@ def create_app(config_class=Config):
     from app.routes.journal import journal_bp
     from app.routes.lesson_plans import plans_bp
     from app.routes.reports import reports_bp
+    from app.routes.search import search_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -49,6 +50,7 @@ def create_app(config_class=Config):
     app.register_blueprint(journal_bp)
     app.register_blueprint(plans_bp)
     app.register_blueprint(reports_bp)
+    app.register_blueprint(search_bp)
 
     with app.app_context():
         from app import seed

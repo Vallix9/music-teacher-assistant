@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h4 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Отчёты</h4>
+    <h4 class="page-title mb-0"><i class="bi bi-graph-up-arrow"></i> Отчёты</h4>
     <div class="d-flex gap-2 align-items-center">
         <form method="get" class="d-flex gap-2">
             <select name="class_id" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -57,7 +57,7 @@
 <div class="row g-3 mb-3">
     <div class="col-lg-6">
         <div class="card shadow-sm h-100">
-            <div class="card-header bg-white"><strong><i class="bi bi-pie-chart"></i> Распределение оценок</strong></div>
+            <div class="card-header"><strong><i class="bi bi-pie-chart"></i> Распределение оценок</strong></div>
             <div class="card-body">
                 {% set total = grade_distribution.values()|sum %}
                 {% if total %}
@@ -82,10 +82,10 @@
 
     <div class="col-lg-6">
         <div class="card shadow-sm h-100">
-            <div class="card-header bg-white"><strong><i class="bi bi-bar-chart"></i> Сводка по классам</strong></div>
+            <div class="card-header"><strong><i class="bi bi-bar-chart"></i> Сводка по классам</strong></div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle">
-                    <thead class="table-light">
+                    <thead>
                         <tr><th>Класс</th><th class="text-center">Посещаемость</th><th class="text-center">Средний балл</th><th class="text-center">Оценок</th></tr>
                     </thead>
                     <tbody>
@@ -105,10 +105,10 @@
 </div>
 
 <div class="card shadow-sm">
-    <div class="card-header bg-white"><strong><i class="bi bi-person-check"></i> По ученикам — {{ school_class.name }}</strong></div>
+    <div class="card-header"><strong><i class="bi bi-person-check"></i> По ученикам — {{ school_class.name }}</strong></div>
     <div class="table-responsive">
         <table class="table table-hover mb-0 align-middle">
-            <thead class="table-light">
+            <thead>
                 <tr>
                     <th>#</th><th>Ученик</th>
                     <th class="text-center">Уроков</th><th class="text-center">Пропусков</th><th class="text-center">Опозданий</th>
@@ -125,7 +125,7 @@
                     <td class="text-center">{{ row.late }}</td>
                     <td class="text-center">
                         {% if row.percent is not none %}
-                        <span class="badge {% if row.percent >= 90 %}bg-success{% elif row.percent >= 75 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                        <span class="badge {% if row.percent >= 90 %}bg-success{% elif row.percent >= 75 %}bg-warning{% else %}bg-danger{% endif %}">
                             {{ row.percent }}%
                         </span>
                         {% else %}—{% endif %}
