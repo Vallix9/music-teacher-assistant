@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 
 from app import db
 from app.models import LessonPlan, Schedule, SchoolClass
+from app.utils.access import accessible_classes, parent_class_ids
 from app.utils.decorators import staff_required
 
 plans_bp = Blueprint('lesson_plans', __name__)
@@ -13,13 +14,13 @@ plans_bp = Blueprint('lesson_plans', __name__)
 @plans_bp.route('/lesson-plans')
 @login_required
 def lesson_plans_list():
-    classes = SchoolClass.query.order_by(SchoolClass.grade, SchoolClass.name).all()
+    classes = accessible_classes()
     class_id = request.args.get('class_id', type=int)
 
     query = LessonPlan.query
     if current_user.is_parent:
-        child_class_ids = [s.class_id for s in current_user.students]
-        query = query.filter(LessonPlan.class_id.in_(child_class_ids))
+        query = query.filter(db.or_(LessonPlan.class_id.in_(parent_class_ids()),
+                                    LessonPlan.class_id.is_(None)))
     if class_id:
         query = query.filter_by(class_id=class_id)
 
@@ -36,7 +37,7 @@ def lesson_plan_detail(item_id):
         flash('План-конспект не найден', 'danger')
         return redirect(url_for('lesson_plans.lesson_plans_list'))
     if current_user.is_parent:
-        child_class_ids = [s.class_id for s in current_user.students]
+        child_class_ids = parent_class_ids()
         if item.class_id is not None and item.class_id not in child_class_ids:
             from flask import abort
             abort(403)

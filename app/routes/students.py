@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, abort
 from flask_login import login_required, current_user
 
 from app import db
 from app.models import SchoolClass, Student, User, Role, Schedule
+from app.utils.access import accessible_classes, class_is_accessible
 from app.utils.decorators import staff_required
 
 students_bp = Blueprint('students', __name__)
@@ -15,7 +16,7 @@ def _can_manage():
 @students_bp.route('/classes')
 @login_required
 def classes_list():
-    classes = SchoolClass.query.order_by(SchoolClass.grade, SchoolClass.name).all()
+    classes = accessible_classes()
     return render_template('students/classes.html', classes=classes)
 
 
@@ -92,6 +93,8 @@ def class_students(class_id):
     if school_class is None:
         flash('Класс не найден', 'danger')
         return redirect(url_for('students.classes_list'))
+    if not class_is_accessible(class_id):
+        abort(403)
 
     if current_user.is_parent:
         students = [s for s in school_class.students if s.parent_id == current_user.id]

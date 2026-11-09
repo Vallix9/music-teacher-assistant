@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 
 from app import db
 from app.models import Repertoire, SchoolClass
+from app.utils.access import accessible_classes, parent_class_ids
 from app.utils.decorators import staff_required
 
 repertoire_bp = Blueprint('repertoire', __name__)
@@ -11,11 +12,15 @@ repertoire_bp = Blueprint('repertoire', __name__)
 @repertoire_bp.route('/repertoire')
 @login_required
 def repertoire_list():
-    classes = SchoolClass.query.order_by(SchoolClass.grade, SchoolClass.name).all()
+    classes = accessible_classes()
     class_id = request.args.get('class_id', type=int)
     q = request.args.get('q', '').strip()
 
     query = Repertoire.query
+    if current_user.is_parent:
+        query = query.filter(
+            db.or_(Repertoire.class_id.in_(parent_class_ids()),
+                   Repertoire.class_id.is_(None)))
     if class_id:
         query = query.filter_by(class_id=class_id)
     if q:

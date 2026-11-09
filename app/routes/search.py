@@ -34,6 +34,8 @@ def search():
             child_ids = {s.id for s in current_user.students}
             results['classes'] = [c for c in results['classes'] if c.id in child_class_ids]
             results['students'] = [s for s in results['students'] if s.id in child_ids]
+            results['repertoire'] = [r for r in results['repertoire']
+                                     if r.class_id is None or r.class_id in child_class_ids]
             results['materials'] = [m for m in results['materials']
                                     if m.class_id is None or m.class_id in child_class_ids]
             results['events'] = [e for e in results['events']

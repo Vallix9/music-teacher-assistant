@@ -8,6 +8,7 @@
     <p class="auth-sub">Система-помощник учителя музыки в школе</p>
 
     <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
             <label class="form-label">Логин или e-mail</label>
             <div class="search-box" style="height: 46px; max-width: none;">

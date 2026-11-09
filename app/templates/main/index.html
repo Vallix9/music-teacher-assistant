@@ -5,7 +5,7 @@
 <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
     <div>
         <div class="text-uppercase small fw-bold" style="color: var(--violet); letter-spacing: .14em;">
-            Рабочий стол учителя
+            {% if is_parent %}Личный кабинет родителя{% else %}Рабочий стол учителя{% endif %}
         </div>
         <h4 class="mb-1 mt-1">Здравствуйте, {{ current_user.full_name.split(' ')[1] if current_user.full_name.split(' ')|length > 1 else current_user.full_name }}!</h4>
         <p class="text-muted mb-0 small">
@@ -36,7 +36,7 @@
         <div class="card stat-card stat-blue h-100">
             <div class="card-body">
                 <div class="stat-value">{{ total_students }}</div>
-                <div class="stat-label">учеников</div>
+                <div class="stat-label">{% if is_parent %}детей{% else %}учеников{% endif %}</div>
             </div>
         </div>
     </div>

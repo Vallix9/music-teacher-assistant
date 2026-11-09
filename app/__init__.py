@@ -3,11 +3,13 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect, CSRFError
 
 from config import Config
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+csrf = CSRFProtect()
 login_manager.login_view = 'auth.login'
 login_manager.login_message_category = 'warning'
 
@@ -21,6 +23,7 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     login_manager.init_app(app)
+    csrf.init_app(app)
 
     from app.models import User
 
@@ -62,6 +65,19 @@ def create_app(config_class=Config):
         from flask import render_template
         return render_template('errors/error.html', code=403, title='Доступ запрещён',
                                message='У вас нет прав для просмотра этой страницы.'), 403
+
+    @app.errorhandler(CSRFError)
+    def csrf_error(e):
+        from flask import render_template
+        return render_template('errors/error.html', code=400, title='Форма устарела',
+                               message='Страница устарела или запрос небезопасен. '
+                                       'Обновите страницу и попробуйте снова.'), 400
+
+    @app.errorhandler(413)
+    def too_large(_e):
+        from flask import render_template
+        return render_template('errors/error.html', code=413, title='Файл слишком большой',
+                               message='Максимальный размер загружаемого файла — 16 МБ.'), 413
 
     @app.errorhandler(404)
     def not_found(_e):

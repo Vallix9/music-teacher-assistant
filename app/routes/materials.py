@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 
 from app import db
 from app.models import Material, SchoolClass
+from app.utils.access import accessible_classes, parent_class_ids
 from app.utils.decorators import staff_required
 
 materials_bp = Blueprint('materials', __name__)
@@ -24,14 +25,13 @@ def allowed_file(filename):
 @materials_bp.route('/materials')
 @login_required
 def materials_list():
-    classes = SchoolClass.query.order_by(SchoolClass.grade, SchoolClass.name).all()
+    classes = accessible_classes()
     class_id = request.args.get('class_id', type=int)
     lesson_type = request.args.get('lesson_type', '').strip()
 
     query = Material.query
     if current_user.is_parent:
-        child_class_ids = [s.class_id for s in current_user.students]
-        query = query.filter(Material.class_id.in_(child_class_ids) | (Material.class_id.is_(None)))
+        query = query.filter(Material.class_id.in_(parent_class_ids()) | (Material.class_id.is_(None)))
     if class_id:
         query = query.filter_by(class_id=class_id)
     if lesson_type:
@@ -119,6 +119,11 @@ def material_delete(item_id):
     if item is None:
         flash('Материал не найден', 'danger')
     else:
+        if item.file_path:
+            try:
+                os.remove(os.path.join(current_app_upload_dir(), item.file_path))
+            except OSError:
+                pass
         db.session.delete(item)
         db.session.commit()
         flash('Материал удалён', 'success')

@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 
 from app import db
 from app.models import Attendance, Grade, SchoolClass, Student
+from app.utils.access import accessible_classes
 
 reports_bp = Blueprint('reports', __name__)
 
@@ -12,10 +13,7 @@ reports_bp = Blueprint('reports', __name__)
 @reports_bp.route('/reports')
 @login_required
 def reports():
-    classes = SchoolClass.query.order_by(SchoolClass.grade, SchoolClass.name).all()
-    if current_user.is_parent:
-        child_class_ids = [s.class_id for s in current_user.students]
-        classes = [c for c in classes if c.id in child_class_ids]
+    classes = accessible_classes()
 
     class_id = request.args.get('class_id', type=int)
     period = request.args.get('period', 'all')
@@ -28,6 +26,8 @@ def reports():
         date_from = date.today() - timedelta(days=120)
 
     school_class = db.session.get(SchoolClass, class_id) if class_id else None
+    if school_class and school_class.id not in [c.id for c in classes]:
+        school_class = None
 
     attendance_rows = []
     grade_rows = []
@@ -114,14 +114,11 @@ def reports():
 @login_required
 def reports_export():
     """Выгрузка отчёта по классу в CSV."""
-    classes = SchoolClass.query.order_by(SchoolClass.grade, SchoolClass.name).all()
-    if current_user.is_parent:
-        child_class_ids = [s.class_id for s in current_user.students]
-        classes = [c for c in classes if c.id in child_class_ids]
+    classes = accessible_classes()
 
     class_id = request.args.get('class_id', type=int)
     school_class = db.session.get(SchoolClass, class_id) if class_id else None
-    if school_class is None:
+    if school_class is None or school_class.id not in [c.id for c in classes]:
         from flask import flash, redirect, url_for
         flash('Выберите класс для выгрузки', 'warning')
         return redirect(url_for('reports.reports'))

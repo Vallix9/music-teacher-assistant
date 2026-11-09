@@ -52,6 +52,7 @@
     </div>
     <div class="table-responsive">
         <form method="post" action="{{ url_for('journal.journal_save') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="class_id" value="{{ school_class.id }}">
             <input type="hidden" name="lesson_date" value="{{ lesson_date }}">
             <input type="hidden" name="schedule_id" value="{{ lesson.id if lesson else '' }}">

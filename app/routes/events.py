@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 
 from app import db
 from app.models import Event, SchoolClass
+from app.utils.access import accessible_classes, parent_class_ids
 from app.utils.decorators import staff_required
 
 events_bp = Blueprint('events', __name__)
@@ -11,13 +12,13 @@ events_bp = Blueprint('events', __name__)
 @events_bp.route('/events')
 @login_required
 def events_list():
-    classes = SchoolClass.query.order_by(SchoolClass.grade, SchoolClass.name).all()
+    classes = accessible_classes()
     status = request.args.get('status', '').strip()
 
     query = Event.query
     if current_user.is_parent:
-        child_class_ids = [s.class_id for s in current_user.students]
-        query = query.filter(Event.class_id.in_(child_class_ids) | (Event.class_id.is_(None)))
+        query = query.filter(db.or_(Event.class_id.in_(parent_class_ids()),
+                                    Event.class_id.is_(None)))
     if status:
         query = query.filter_by(status=status)
 

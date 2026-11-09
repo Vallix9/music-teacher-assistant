@@ -5,17 +5,14 @@ from flask_login import login_required, current_user
 
 from app import db
 from app.models import (Attendance, Grade, Schedule, SchoolClass, Student)
+from app.utils.access import accessible_classes
 from app.utils.decorators import staff_required
 
 journal_bp = Blueprint('journal', __name__)
 
 
 def _classes_for_current_user():
-    classes = SchoolClass.query.order_by(SchoolClass.grade, SchoolClass.name).all()
-    if current_user.is_parent:
-        child_class_ids = [s.class_id for s in current_user.students]
-        classes = [c for c in classes if c.id in child_class_ids]
-    return classes
+    return accessible_classes()
 
 
 @journal_bp.route('/journal')
@@ -32,7 +29,12 @@ def journal():
         lesson_date = date.today().isoformat()
 
     school_class = db.session.get(SchoolClass, class_id) if class_id else None
+    if school_class and school_class.id not in [c.id for c in classes]:
+        school_class = None
+        class_id = None
     lesson = db.session.get(Schedule, schedule_id) if schedule_id else None
+    if lesson and (school_class is None or lesson.class_id != school_class.id):
+        lesson = None
 
     students = []
     attendance_map = {}

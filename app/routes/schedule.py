@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 
 from app import db
 from app.models import Schedule, SchoolClass, User, Role
+from app.utils.access import accessible_classes, parent_class_ids
 from app.utils.decorators import staff_required
 
 schedule_bp = Blueprint('schedule', __name__)
@@ -13,17 +14,15 @@ DAYS = ['Понедельник', 'Вторник', 'Среда', 'Четвер�
 @schedule_bp.route('/schedule')
 @login_required
 def schedule_list():
-    classes = SchoolClass.query.order_by(SchoolClass.grade, SchoolClass.name).all()
+    classes = accessible_classes()
     class_id = request.args.get('class_id', type=int)
     selected_class = db.session.get(SchoolClass, class_id) if class_id else None
-
-    if current_user.is_parent:
-        child_ids = [s.id for s in current_user.students]
-        classes = [c for c in classes if c.id in child_ids]
-        if selected_class and selected_class.id not in [c.id for c in classes]:
-            selected_class = None
+    if selected_class and selected_class.id not in [c.id for c in classes]:
+        selected_class = None
 
     items = Schedule.query.filter_by(year='2025/2026')
+    if current_user.is_parent and not selected_class:
+        items = items.filter(Schedule.class_id.in_(parent_class_ids()))
     if selected_class:
         items = items.filter_by(class_id=selected_class.id)
     items = items.order_by(Schedule.day_of_week, Schedule.lesson_number).all()
