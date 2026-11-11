@@ -51,7 +51,7 @@ for i, page in enumerate(doc, start=1):
 
 # --- оглавление: строка TOC и реальная страница заголовка ---
 print("\n=== ОГЛАВЛЕНИЕ ===")
-toc_text = "\n".join(pages[1:2])
+toc_text = "\n".join(pages[0:1])
 entries = re.findall(r"([^\n]+?)\s*\.{3,}\s*(\d+)", toc_text)
 for title, num in entries:
     title = title.strip()
@@ -59,6 +59,6 @@ for title, num in entries:
     real = [
         i + 1
         for i, t in enumerate(flat)
-        if i > 0 and key in t and not t.startswith("2 ") and not t.startswith("3 ")
+        if i > 0 and key in t
     ]
     print(f"{'OK ' if real and int(num) in real[:3] else '?? '} {title[:45]!r} toc={num} pages={real[:4]}")

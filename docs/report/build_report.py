@@ -4,7 +4,6 @@ import os
 import sys
 
 from docx import Document
-from docx.enum.section import WD_SECTION
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
@@ -382,67 +381,20 @@ core.comments = ""
 
 setup_document_language(doc)
 
-# --- title page (section 1) ---
-para("Министерство просвещения Российской Федерации", align=WD_ALIGN_PARAGRAPH.CENTER,
-     indent=0, size=14, line=1.15, after=2)
-para("____________________________________________________________", align=WD_ALIGN_PARAGRAPH.CENTER,
-     indent=0, size=12, line=1.0, after=2)
-para("(наименование образовательной организации)", align=WD_ALIGN_PARAGRAPH.CENTER,
-     indent=0, size=10, line=1.0, after=10)
-para("Кафедра ______________________________________", align=WD_ALIGN_PARAGRAPH.CENTER,
-     indent=0, size=14, line=1.15, after=0)
-
-for _ in range(5):
-    para("", indent=0, size=14, line=1.15)
-
-para("КУРСОВАЯ РАБОТА", align=WD_ALIGN_PARAGRAPH.CENTER, indent=0, size=18,
-     bold=True, line=1.15, after=6)
-para("по дисциплине «Информационные технологии в образовании»",
-     align=WD_ALIGN_PARAGRAPH.CENTER, indent=0, size=14, line=1.15, after=4)
-para("на тему: «Система-помощник учителя музыки в школе»",
-     align=WD_ALIGN_PARAGRAPH.CENTER, indent=0, size=14, bold=True, line=1.15, after=0)
-
-for _ in range(5):
-    para("", indent=0, size=14, line=1.15)
-
-para("Выполнил(а): студент(ка) ____ курса", align=WD_ALIGN_PARAGRAPH.RIGHT,
-     indent=0, size=14, line=1.15, after=0)
-para("группы ________________", align=WD_ALIGN_PARAGRAPH.RIGHT,
-     indent=0, size=14, line=1.15, after=0)
-para("________________________ (Ф.И.О.)", align=WD_ALIGN_PARAGRAPH.RIGHT,
-     indent=0, size=14, line=1.15, after=8)
-para("Руководитель: ________________________", align=WD_ALIGN_PARAGRAPH.RIGHT,
-     indent=0, size=14, line=1.15, after=0)
-para("Оценка: __________________", align=WD_ALIGN_PARAGRAPH.RIGHT,
-     indent=0, size=14, line=1.15, after=0)
-
-for _ in range(17):
-    para("", indent=0, size=14, line=1.15)
-
-para("________________ — 2026", align=WD_ALIGN_PARAGRAPH.CENTER,
-     indent=0, size=14, line=1.15, after=0)
-
-# --- main section (section 2) ---
-doc.add_section(WD_SECTION.NEW_PAGE)
-
-title_section = doc.sections[0]
-title_footer = title_section.footer
-title_footer.is_linked_to_previous = False
-ftr_element = title_footer._element
+# --- единственная секция: номер страницы в нижнем колонтитуле ---
+section = doc.sections[0]
+footer = section.footer
+footer.is_linked_to_previous = False
+ftr_element = footer._element
 for child in list(ftr_element):
     ftr_element.remove(child)
-ftr_element.append(OxmlElement("w:p"))
-set_page_start(title_section, 1)
-
-section2 = doc.sections[1]
-section2.footer.is_linked_to_previous = False
-footer_p = section2.footer.paragraphs[0]
+footer_p = footer.add_paragraph()
 footer_p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 footer_p.paragraph_format.first_line_indent = Cm(0)
 footer_p.paragraph_format.space_before = Pt(0)
 footer_p.paragraph_format.space_after = Pt(0)
 add_page_field(footer_p)
-set_page_start(section2, 2)
+set_page_start(section, 1)
 
 # --- table of contents ---
 para("СОДЕРЖАНИЕ", align=WD_ALIGN_PARAGRAPH.CENTER, indent=0, size=14,
