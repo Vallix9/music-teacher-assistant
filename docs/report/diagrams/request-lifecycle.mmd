@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant P as Пользователь
+    participant F as Flask
+    participant B as Blueprint
+    participant D as База данных
+
+    P->>F: GET /journal
+    F->>B: сессия и роль
+    B->>D: SELECT
+    D-->>B: записи
+    B-->>F: шаблон
+    F-->>P: HTML
+
+    P->>F: POST /journal/save
+    F->>B: CSRF и права
+    B->>D: INSERT / UPDATE
+    D-->>B: commit
+    B-->>F: redirect
+    F-->>P: 302 Redirect

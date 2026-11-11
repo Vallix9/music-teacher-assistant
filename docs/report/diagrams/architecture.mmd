@@ -1,0 +1,9 @@
+flowchart TB
+    U[Пользователь<br/>учитель, администратор, родитель] --> B[Браузер<br/>HTML, CSS, Bootstrap 5]
+    B -->|HTTP| S[Сервер<br/>waitress + Flask]
+    S --> A[Приложение<br/>Blueprints, Flask-Login, CSRFProtect]
+    A --> T[Jinja2<br/>шаблоны]
+    A --> D[Данные<br/>SQLAlchemy ORM]
+    D --> DB[(SQLite / MySQL)]
+    A --> F[(app/static/uploads)]
+    T --> B
