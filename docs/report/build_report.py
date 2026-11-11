@@ -479,7 +479,7 @@ for blocks in (content_part1.BLOCKS, content_part2.BLOCKS):
             SRC_NUM += 1
             p = doc.add_paragraph()
             pf = p.paragraph_format
-            pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
             pf.left_indent = Cm(2.4)
             pf.first_line_indent = Cm(-0.65)
             pf.line_spacing = 1.5
