@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 """Build the coursework .docx from the user's template and the report content."""
 import os
+import re
 import sys
+from xml.sax.saxutils import escape
 
 from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
@@ -21,6 +24,9 @@ OUTPUT = os.path.join(HERE, "Курсовая_работа.docx")
 
 FONT = "Times New Roman"
 BLACK = RGBColor(0, 0, 0)
+
+# тексты подстрочных сносок в порядке появления в документе
+FOOTNOTE_TEXTS = []
 
 
 # ---------------------------------------------------------------------------
@@ -55,9 +61,80 @@ def para(text="", align=WD_ALIGN_PARAGRAPH.JUSTIFY, indent=1.5, size=14,
     pf.keep_with_next = keep
     pf.page_break_before = page_break
     if text:
-        run = p.add_run(text)
-        set_run(run, size=size, bold=bold, italic=italic)
+        add_runs_with_footnotes(p, text, size=size, bold=bold, italic=italic)
     return p
+
+
+def add_runs_with_footnotes(p, text, size=14, bold=False, italic=False):
+    """Добавляет текст, превращая метки {{fn:...}} в подстрочные сноски."""
+    parts = re.split(r"\{\{fn:(.*?)\}\}", text, flags=re.S)
+    for i, chunk in enumerate(parts):
+        if i % 2 == 0:
+            if chunk:
+                run = p.add_run(chunk)
+                set_run(run, size=size, bold=bold, italic=italic)
+        else:
+            add_footnote_ref(p, chunk, size=size)
+
+
+def add_footnote_ref(p, text, size=14):
+    FOOTNOTE_TEXTS.append(text.strip())
+    fn_id = len(FOOTNOTE_TEXTS)
+
+    run = p.add_run()
+    set_run(run, size=size)
+    rPr = run._r.get_or_add_rPr()
+    vert = OxmlElement("w:vertAlign")
+    vert.set(qn("w:val"), "superscript")
+    rPr.append(vert)
+
+    ref = OxmlElement("w:footnoteReference")
+    ref.set(qn("w:id"), str(fn_id))
+    run._r.append(ref)
+
+
+FN_RPR = (
+    '<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" '
+    'w:cs="Times New Roman" w:eastAsia="Times New Roman"/>'
+    '<w:sz w:val="20"/><w:szCs w:val="20"/><w:lang w:val="ru-RU"/>'
+)
+
+
+def build_footnotes_xml():
+    separator = (
+        '<w:footnote w:type="separator" w:id="-1"><w:p><w:pPr>'
+        '<w:spacing w:after="0" w:line="240" w:lineRule="auto"/>'
+        '</w:pPr><w:r><w:separator/></w:r></w:p></w:footnote>'
+    )
+    continuation = (
+        '<w:footnote w:type="continuationSeparator" w:id="0"><w:p><w:pPr>'
+        '<w:spacing w:after="0" w:line="240" w:lineRule="auto"/>'
+        '</w:pPr><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>'
+    )
+    notes = []
+    for fn_id, text in enumerate(FOOTNOTE_TEXTS, start=1):
+        notes.append(
+            f'<w:footnote w:id="{fn_id}"><w:p><w:pPr>'
+            '<w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>'
+            '<w:ind w:firstLine="709"/><w:jc w:val="both"/></w:pPr>'
+            f'<w:r><w:rPr>{FN_RPR}</w:rPr><w:footnoteRef/></w:r>'
+            f'<w:r><w:rPr>{FN_RPR}</w:rPr>'
+            f'<w:t xml:space="preserve"> {escape(text)}</w:t></w:r>'
+            '</w:p></w:footnote>'
+        )
+    return (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        '<w:footnotes xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+        + separator + continuation + "".join(notes) + '</w:footnotes>'
+    )
+
+
+def attach_footnotes(document):
+    """Заменяет стандартную часть footnotes.xml шаблона собранными сносками."""
+    if not FOOTNOTE_TEXTS:
+        return
+    part = document.part.part_related_by(RT.FOOTNOTES)
+    part._blob = build_footnotes_xml().encode("utf-8")
 
 
 def heading1(text):
@@ -442,5 +519,8 @@ for blocks in (content_part1.BLOCKS, content_part2.BLOCKS):
         else:
             raise ValueError(f"unknown block: {kind}")
 
+attach_footnotes(doc)
+
 doc.save(OUTPUT)
 print("saved", OUTPUT)
+print("footnotes:", len(FOOTNOTE_TEXTS))
