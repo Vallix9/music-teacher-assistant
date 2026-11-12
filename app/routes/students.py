@@ -86,6 +86,33 @@ def class_delete(class_id):
     return redirect(url_for('students.classes_list'))
 
 
+@students_bp.route('/students')
+@login_required
+def students_list():
+    query = Student.query.join(SchoolClass)
+    if current_user.is_parent:
+        query = query.filter(Student.parent_id == current_user.id)
+
+    search = request.args.get('q', '').strip()
+    if search:
+        query = query.filter(Student.full_name.ilike(f'%{search}%'))
+
+    class_id = request.args.get('class_id', type=int)
+    if class_id:
+        if not class_is_accessible(class_id):
+            abort(403)
+        query = query.filter(Student.class_id == class_id)
+
+    students = query.order_by(Student.full_name).all()
+    return render_template(
+        'students/students.html',
+        students=students,
+        classes=accessible_classes(),
+        search=search,
+        selected_class_id=class_id,
+    )
+
+
 @students_bp.route('/classes/<int:class_id>/students')
 @login_required
 def class_students(class_id):
@@ -112,6 +139,10 @@ def student_create():
         flash('Сначала создайте хотя бы один класс', 'warning')
         return redirect(url_for('students.classes_list'))
 
+    selected_class_id = request.args.get('class_id', type=int)
+    if selected_class_id not in {c.id for c in classes}:
+        selected_class_id = None
+
     if request.method == 'POST':
         full_name = request.form.get('full_name', '').strip()
         class_id = request.form.get('class_id')
@@ -131,7 +162,8 @@ def student_create():
             return redirect(url_for('students.class_students', class_id=int(class_id)))
 
     parents = User.query.filter_by(role=Role.PARENT).order_by(User.full_name).all()
-    return render_template('students/student_form.html', student=None, classes=classes, parents=parents)
+    return render_template('students/student_form.html', student=None, classes=classes,
+                           parents=parents, selected_class_id=selected_class_id)
 
 
 @students_bp.route('/students/<int:student_id>/edit', methods=['GET', 'POST'])

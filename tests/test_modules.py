@@ -2,7 +2,7 @@
 from datetime import date
 
 from app import db
-from app.models import Attendance, Grade, LessonPlan, SchoolClass, Student
+from app.models import Attendance, Grade, LessonPlan, SchoolClass, Student, User
 
 
 def first_class_data(app):
@@ -140,3 +140,21 @@ def test_parent_cannot_open_other_student_journal(app, parent_client):
         other_student_id = other_student.id
 
     assert parent_client.get(f'/journal/student/{other_student_id}').status_code == 403
+
+
+def test_parent_students_page_shows_only_own_children(app, parent_client):
+    with app.app_context():
+        parent = User.query.filter_by(username='parent').first()
+        assert parent is not None
+        own_names = [s.full_name for s in parent.students]
+        other = Student.query.filter(Student.parent_id.is_(None)).first()
+        assert own_names and other is not None
+        other_name = other.full_name
+
+    response = parent_client.get('/students')
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    for name in own_names:
+        assert name in html
+    assert other_name not in html
+    assert 'Добавить ученика' not in html

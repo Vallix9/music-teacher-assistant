@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Ученики{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <h4 class="page-title mb-1"><i class="bi bi-person-vcard"></i> Ученики</h4>
+        <small class="text-muted">Всего: {{ students|length }}</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('students.classes_list') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-door-open"></i> Классы
+        </a>
+        {% if current_user.is_admin or current_user.is_teacher %}
+        <a href="{{ url_for('students.student_create') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-person-plus"></i> Добавить ученика
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<form method="get" class="card shadow-sm mb-3">
+    <div class="card-body py-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label small text-muted mb-1">Поиск по ФИО</label>
+                <input type="search" name="q" class="form-control" value="{{ search }}"
+                       placeholder="Начните вводить фамилию или имя">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small text-muted mb-1">Класс</label>
+                <select name="class_id" class="form-select">
+                    <option value="">Все классы</option>
+                    {% for c in classes %}
+                    <option value="{{ c.id }}" {% if selected_class_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Найти</button>
+                {% if search or selected_class_id %}
+                <a href="{{ url_for('students.students_list') }}" class="btn btn-outline-secondary" title="Сбросить">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>ФИО ученика</th>
+                    <th>Класс</th>
+                    <th>Дата рождения</th>
+                    <th>Телефон</th>
+                    <th>Родитель</th>
+                    {% if current_user.is_admin or current_user.is_teacher %}
+                    <th class="text-end">Действия</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                <tr>
+                    <td>{{ s.id }}</td>
+                    <td>
+                        <strong>{{ s.full_name }}</strong>
+                        {% if s.notes %}<br><small class="text-muted">{{ s.notes }}</small>{% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('students.class_students', class_id=s.class_id) }}">{{ s.school_class.name }}</a>
+                    </td>
+                    <td>{{ s.birth_date.strftime('%d.%m.%Y') if s.birth_date else '—' }}</td>
+                    <td>{{ s.phone or '—' }}</td>
+                    <td>{{ s.parent.full_name if s.parent else '—' }}</td>
+                    {% if current_user.is_admin or current_user.is_teacher %}
+                    <td class="text-end">
+                        <a href="{{ url_for('students.student_edit', student_id=s.id) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="post" action="{{ url_for('students.student_delete', student_id=s.id) }}" class="d-inline"
+                              onsubmit="return confirm('Удалить ученика {{ s.full_name }}?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="{{ 7 if current_user.is_admin or current_user.is_teacher else 6 }}" class="text-center text-muted py-4">
+                        {% if search or selected_class_id %}
+                        Ученики не найдены. <a href="{{ url_for('students.students_list') }}">Сбросить фильтры</a>
+                        {% else %}
+                        Ученики ещё не добавлены
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

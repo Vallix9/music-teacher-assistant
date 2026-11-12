@@ -13,7 +13,7 @@
     <div class="d-flex gap-2">
         <a href="{{ url_for('students.classes_list') }}" class="btn btn-outline-secondary btn-sm">К классам</a>
         {% if current_user.is_admin or current_user.is_teacher %}
-        <a href="{{ url_for('students.student_create') }}" class="btn btn-primary btn-sm">
+        <a href="{{ url_for('students.student_create', class_id=school_class.id) }}" class="btn btn-primary btn-sm">
             <i class="bi bi-person-plus"></i> Добавить ученика
         </a>
         {% endif %}

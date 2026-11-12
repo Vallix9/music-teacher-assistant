@@ -6,6 +6,7 @@ from tests.conftest import login
 PAGES = [
     '/',
     '/classes',
+    '/students',
     '/schedule',
     '/repertoire',
     '/materials',

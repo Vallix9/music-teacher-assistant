@@ -39,8 +39,11 @@
         <a class="side-link {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}" title="Главная">
             <i class="bi bi-house-door"></i><span>Главная</span>
         </a>
-        <a class="side-link {% if request.blueprint == 'students' %}active{% endif %}" href="{{ url_for('students.classes_list') }}" title="Классы и ученики">
-            <i class="bi bi-people"></i><span>Классы</span>
+        <a class="side-link {% if request.endpoint in ['students.classes_list', 'students.class_create', 'students.class_edit', 'students.class_students'] %}active{% endif %}" href="{{ url_for('students.classes_list') }}" title="Классы">
+            <i class="bi bi-door-open"></i><span>Классы</span>
+        </a>
+        <a class="side-link {% if request.endpoint in ['students.students_list', 'students.student_create', 'students.student_edit'] %}active{% endif %}" href="{{ url_for('students.students_list') }}" title="Ученики">
+            <i class="bi bi-person-vcard"></i><span>Ученики</span>
         </a>
         <a class="side-link {% if request.blueprint == 'schedule' %}active{% endif %}" href="{{ url_for('schedule.schedule_list') }}" title="Расписание">
             <i class="bi bi-calendar-week"></i><span>Расписание</span>

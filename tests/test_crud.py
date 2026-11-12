@@ -47,6 +47,10 @@ def test_student_crud(app, teacher_client):
     name = create_class(teacher_client, name='9А', grade='9')
     class_id = get_class_id(app, name)
 
+    response = teacher_client.get(f'/students/create?class_id={class_id}')
+    assert response.status_code == 200
+    assert f'<option value="{class_id}" selected>' in response.get_data(as_text=True)
+
     response = teacher_client.post(
         '/students/create',
         data={'full_name': 'Тестовый Ученик', 'class_id': class_id},
@@ -57,6 +61,10 @@ def test_student_crud(app, teacher_client):
         student = Student.query.filter_by(full_name='Тестовый Ученик').first()
         assert student is not None
         student_id = student.id
+
+    response = teacher_client.get('/students')
+    assert response.status_code == 200
+    assert 'Тестовый Ученик' in response.get_data(as_text=True)
 
     response = teacher_client.post(
         f'/students/{student_id}/edit',
